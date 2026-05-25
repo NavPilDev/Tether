@@ -1,0 +1,225 @@
+# Tether — Creator Screens
+
+## Stats Philosophy Reminder
+
+Creator home screen: maximum 3 numbers, all action-oriented.
+Creators do not have an analytics screen in v1. They do not need impression data.
+Their home screen is an inbox. What's available, what's active, what's pending payment.
+
+---
+
+## Creator Theme
+
+All creator screens apply `data-theme="creator"` on the `<html>` element.
+Primary color shifts from teal (#00D4AA) to fuchsia (#C026D3).
+All component CSS variable references automatically pick up the correct values.
+Never hardcode fuchsia values in creator components — always use `var(--color-teal-400)` etc.
+The variable names stay the same; the theme overrides the values.
+
+---
+
+## Creator Onboarding (`/onboarding/creator/*`)
+
+5 steps. Progress bar fills 20% per step.
+Single-column centered form, max-width 560px. No sidebar.
+Creator theme applied from persona selection screen onward.
+
+### Step 1 — Basics (`/onboarding/creator/basics`)
+- Your name or creator handle (text input)
+- Where are you based? (text input — city, country)
+- Profile photo upload (circular preview, drag-and-drop)
+
+### Step 2 — Platforms (`/onboarding/creator/platforms`)
+- Which platforms are you active on? (icon cards, multi-select: TikTok / Instagram / YouTube Shorts / Twitter-X)
+- Link your profiles (one URL input per selected platform, shown dynamically)
+- Roughly how many followers do you have in total? (pill select: Under 1k / 1k–10k / 10k–100k / 100k+)
+
+### Step 3 — Niche (`/onboarding/creator/niche`)
+- What topics do you create content about? (multi-select pills — this is the primary matching key)
+  Options: Fitness / Tech / Fashion / Food / Finance / Gaming / Beauty / Lifestyle / Education / Travel / Sports / Entertainment
+- Describe your content in one sentence (text input — shown on creator card to founders)
+- Link your best piece of content (optional, one URL)
+
+### Step 4 — Style (`/onboarding/creator/style`)
+- How would you describe your content style? (multi-select pills: Energetic / Calm / Funny / Educational / Inspirational / Raw & authentic)
+- What type of content do you make? (multi-select pills: Short-form video / Carousels / Photo posts / Voiceovers / Talking head)
+
+### Step 5 — Availability & Pay (`/onboarding/creator/availability`)
+- How many brand deals can you take per month? (pill select: 1–2 / 3–5 / 5+)
+- What's your minimum rate per piece of content? (pill select: Under $50 / $50–$150 / $150–$500 / $500+)
+- Note: Payment details (bank/PayPal) are NOT collected here. They are triggered when the creator tries to accept their first gig payout.
+
+---
+
+## Screen 1 — Creator Dashboard / Gig Feed (`/creator/dashboard`)
+
+**Purpose:** An inbox. What gigs are available for me right now.
+
+**Layout:** Creator sidebar (240px) + content area (max-width 1100px, 40px top padding)
+
+**Sidebar:**
+- Tether logo (chain-link, renders in fuchsia via CSS variable)
+- Section label "DISCOVER"
+- Nav: Dashboard (active), Browse Gigs, My Jobs
+- Section label "PROFILE"
+- Nav: My Profile, My Tethers, Earnings
+- Bottom: avatar (initials), handle, settings gear
+- Active state uses creator theme primary color
+
+**Home screen content:**
+
+*Header:*
+- "Good morning, [handle]" — 22px medium
+- Subtext: "X new gigs matched to your niche today"
+
+*3 metric cards only (action-oriented):*
+- Open gigs matched to you
+- Active jobs (approved, in progress)
+- Pending payout (dollar amount)
+
+*Matched gig feed (primary content):*
+- Card list (not grid — list is easier to scan quickly)
+- Each card: brand name, niche tag, content type badge, platform icons, pay rate (prominent), deadline, "View gig" button
+- Empty state: "No new gigs right now — check back soon. We'll notify you when a match comes in."
+- Filter row above list: All / TikTok / Instagram / YouTube / Twitter + pay range filter
+
+*Notification strip (if any):*
+- Pinned at top of feed if present: "You've been approved for [Brand] · [Content type] · $[amount]"
+- Fuchsia-tinted, with "View job →" CTA
+
+*Tether requests (if any):*
+- Below main feed: "A founder wants to Tether with you"
+- Shows brand name, niche, "View request" button
+
+---
+
+## Screen 2 — Browse Gigs (`/creator/gigs`)
+
+**Purpose:** Full paginated list of open commissions matched to the creator.
+
+- Search bar + filters: platform, pay range, content type, niche
+- Gig cards in a list layout (same card as dashboard feed)
+- Sort: Best match (default) / Highest pay / Newest / Deadline soonest
+- Pagination or infinite scroll
+
+---
+
+## Screen 3 — Gig Detail (`/creator/gigs/[id]`)
+
+**Purpose:** Everything the creator needs to decide whether to apply.
+
+**Layout:** Centered, max-width 720px, sidebar present.
+
+- Brand card at top: logo, brand name, niche tags, one-sentence product description
+- Campaign brief: what they want highlighted, campaign duration
+- Deliverables section:
+  - Content type badge (Sponsor read / Skit / Think piece / Tutorial / Carousel)
+  - Platform(s) required
+  - Full script generated by TetherAI (read-only at this stage)
+  - Music suggestion (if applicable)
+  - Promotional media to use (downloadable)
+  - Slide breakdown if carousel (Slide 1, Slide 2... with copy per slide)
+- Compensation block (visually prominent):
+  - Pay rate: `$[amount]` in large text (24px, success color)
+  - Payment timing: "Released when founder approves your delivery"
+  - Escrow note: "Your payment is held securely by Tether until delivery"
+- Deadline: date + countdown
+- Apply button: full-width, fuchsia, "Apply for this gig"
+  - On click: POST `/api/gigs/{id}/apply`
+  - Shows: "Application sent — the founder will review and approve you shortly"
+  - Button becomes disabled with "Application pending" state
+
+---
+
+## Screen 4 — My Jobs (`/creator/jobs`)
+
+**Purpose:** All active and completed jobs in one place.
+
+**Layout:** Sidebar present. Full content area.
+
+- Tab row: Active / Pending approval / Delivered / Completed
+- Job list rows (table-style):
+  - Brand name, content type, platform, pay amount, deadline, status badge
+  - Deadline countdown on active jobs
+  - "Mark as delivered" button on active jobs (triggers POST `/api/jobs/{id}/deliver`)
+  - "View details" on all rows → same side panel as gig detail
+- Empty state per tab with friendly message and CTA
+
+**Mark as delivered flow:**
+- Creator clicks "Mark as delivered"
+- Modal: "Confirm delivery — paste the link to your published content"
+- URL input (required)
+- Submit → status moves to "Delivered", founder is notified to review
+- Payment moves to "Pending release" in earnings
+
+---
+
+## Screen 5 — Earnings (`/creator/earnings`)
+
+**Purpose:** Simple income tracker. Not a performance dashboard.
+
+**Layout:** Sidebar present. Max-width 800px centered.
+
+*3 stat cards at top:*
+- Total earned (all time)
+- Pending payout (in escrow)
+- This month's earnings
+
+*Payout history table:*
+- Columns: Brand, Content type, Amount, Date paid, Status (Paid / Pending)
+- Filter: All / This month / Last 3 months
+- Sortable by date or amount
+
+*Pending payments section:*
+- Separate from history — shows jobs delivered but not yet released
+- "In escrow — releasing when founder approves" label per item
+
+*Payout method block:*
+- Connected method (PayPal / Bank / Venmo) with last 4 digits
+- "Change payout method" link
+- If not connected: "Connect payout method" CTA (triggers Stripe onboarding)
+
+---
+
+## Screen 6 — My Profile (`/creator/profile`)
+
+**Purpose:** How founders see you. The creator's storefront on Tether.
+
+**Layout:** Two-column: left is the live preview (how founders see it), right is the editing panel.
+
+*Live preview (left, ~400px):*
+- Creator card exactly as founders see it in the discovery screen
+- Profile photo, handle, niche tags, style tags, follower range
+- Featured content: up to 3 pinned pieces (shown as thumbnails with platform icon)
+- Content style descriptors
+- "This is how founders see your profile" label in text-tertiary
+
+*Editing panel (right):*
+- Edit bio / one-sentence description
+- Niche tags (multi-select, same options as onboarding)
+- Style tags (multi-select)
+- Featured content: connect social accounts → auto-pulls recent content → creator pins up to 3
+- Social account connections (TikTok, Instagram, YouTube, Twitter)
+- "Preview as founder" toggle — shows only the left panel full-width
+
+---
+
+## Screen 7 — My Tethers (`/creator/tethers`)
+
+**Purpose:** Manage ongoing brand relationships.
+
+- Tethered brands list: brand logo, name, niche, date tethered, "View gigs" button
+- Past collaborations: brands worked with, completed job count, total earned from them
+- Tether requests inbox: pending tether requests from founders (Accept / Decline)
+- "Reach out to a founder" section: search for a brand on Tether, send a tether request
+
+---
+
+## Screen 8 — Creator Settings (`/creator/settings`)
+
+- Account: name, handle, location, profile photo, email
+- Minimum rate: re-select (auto-filters gigs below floor)
+- Max gigs per month: re-select (prevents over-booking)
+- Payout method: connected account, change option
+- Notifications: toggles for new matched gigs, approvals, payments, tether requests
+- Connected platforms: connect/disconnect per platform
