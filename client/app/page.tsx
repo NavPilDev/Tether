@@ -14,10 +14,10 @@ export default function PrototypePage() {
     <div className="flex flex-col h-screen overflow-hidden">
       {/* ── Prototype Banner ── */}
       <div
-        className="shrink-0 flex items-center justify-center gap-3 py-2 px-4 z-50"
-        style={{ background: "#1A1A2E", borderBottom: "1px solid #2D2D4E" }}
+        className="shrink-0 flex items-center justify-center gap-3 py-2.5 px-4 z-50"
+        style={{ background: "#0B1437", borderBottom: "1px solid #1e2d5a" }}
       >
-        <span className="text-xs" style={{ color: "#9494B8" }}>
+        <span className="text-xs font-medium" style={{ color: "#4A6FA5" }}>
           Prototype
         </span>
 
@@ -53,7 +53,7 @@ export default function PrototypePage() {
           ))}
         </div>
 
-        <span className="text-xs hidden sm:block" style={{ color: "#4A4A6A" }}>
+        <span className="text-xs hidden sm:block" style={{ color: "#4A6FA5" }}>
           Toggle to preview both user experiences
         </span>
       </div>
